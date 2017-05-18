@@ -38,8 +38,8 @@ Simply unzip the code in your favorite directory and make sure the ROOT and BOOS
 default is /usr/lib64/ and /usr/include/. If your libraries are in a different place you will need to either make a symbolic link
 or change the directories in the Makefile.
 
-   make clean
-   make
+make clean
+make
 
 # Running the code
 
