@@ -71,6 +71,8 @@ public:
   bool fResiduals;
 
   std::vector <magnet> mag;
+
+  std::vector <double> sub;
   // Functions
 
   ComptonConfig();

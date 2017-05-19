@@ -161,6 +161,10 @@ double ComptonConfig::RhoToPositionMap(double initCE)
   double R_bend_2    = beam.beam_energy/(pchep::c_light_lol*mag[1].dipole);
 
   QEDasym.open("data/QEDasymP.txt");
+  if(!QEDasym.is_open()){
+    std::cout << red << "Cant open file: QEDasymP.txt" << white << std::endl;
+    exit(1);
+  }
   for (Int_t i = 0; i < nPoints; i++) {
     rho[i]   = (double)i/(nPoints-1);
     kDummy   = rho[i]*kprimemax;
@@ -196,7 +200,7 @@ double ComptonConfig::RhoToPositionMap(double initCE)
   if(debug) {
   }
 
-  TGraph *grtheory = new TGraph("QEDasymP.txt", "%lg %lg");
+  TGraph *grtheory = new TGraph("data/QEDasymP.txt", "%lg %lg");
 
   grtheory->GetXaxis()->SetTitle("dist from compton scattered electrons(m)");
   grtheory->GetYaxis()->SetTitle("#rho");

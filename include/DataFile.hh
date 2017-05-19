@@ -48,7 +48,11 @@ public:
   int GetArraySize() const;
 
   std::vector <double> GetX() const;
+  std::vector <double> GetX(int) const;
+
   std::vector <double> GetY() const;
+  std::vector <double> GetY(int) const;
+
   std::vector <double> GetYError() const;
 };
 

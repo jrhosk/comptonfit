@@ -100,13 +100,13 @@ int main(int argc, char *argv[])
   TF1 *polFit = new TF1("polFit", compton, &ComptonConfig::TheoreticalAsymFit, 1, initCE, 2);
 
   if(polSign) {                                                                                                                                       
-    polFit->SetParameters(initCE, 1.0);   
+    polFit->SetParameters(initCE, 0.9);   
     polFit->SetParLimits(0, 110.0, 124.0);
-    polFit->SetParLimits(1, 0.90, 1.0);   
+    polFit->SetParLimits(1, 0.80, 1.0);   
   } else { 
     polFit->SetParameters(initCE, -1.0);  
     polFit->SetParLimits(0, 110.0, 124.0);
-    polFit->SetParLimits(1, -1.0, -0.90);
+    polFit->SetParLimits(1, -1.0, -0.80);
   }
 
   polFit->SetParNames("comptonEdge","polarization");
@@ -186,11 +186,16 @@ int main(int argc, char *argv[])
     canvas->GetPad(2)->SetGridx(2);
 
     std::vector <double> residuals;
-    
-    for(int i = 1; i < (asym_data->GetArraySize()); i++){
-      residuals.push_back(asym_data->GetY()[i] - polFit->Eval(asym_data->GetX()[i]));
+
+    zero.clear();
+    zero.resize((int)initCE);
+    std::fill(zero.begin(), zero.end(), 0);
+
+    for(int i = 1; i < (int)initCE; i++){
+      residuals.push_back(asym_data->GetY((int)initCE)[i] - polFit->Eval(asym_data->GetX((int)initCE)[i]));
     }
-    TGraphErrors *residual = new TGraphErrors(asym_data->GetArraySize(), (Double_t *)(asym_data->GetX().data()), 
+
+    TGraphErrors *residual = new TGraphErrors((int)initCE, (Double_t *)(asym_data->GetX((int)initCE).data()), 
 					      (Double_t *)(residuals.data()), (Double_t *)(zero.data()), (Double_t *)(zero.data())); 
 
     residual->GetXaxis()->SetTitle("Strip number");
@@ -199,8 +204,8 @@ int main(int argc, char *argv[])
     residual->SetMarkerStyle(kFullCircle);
     residual->SetMarkerColor(kRed);
     residual->SetLineColor(kRed);
-    residual->SetMaximum(0.05);
-    residual->SetMinimum(-0.05);
+    residual->SetMaximum(0.5);
+    residual->SetMinimum(-0.5);
     residual->GetXaxis()->SetLimits(0,150);
     residual->SetFillColor(38);
     residual->Draw("AB");

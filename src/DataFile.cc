@@ -75,10 +75,30 @@ std::vector <double> DataFile::GetX() const
 {
   return x;
 }
+
+std::vector <double> DataFile::GetX(int offset) const
+{
+  std::vector <double>::const_iterator begin = x.begin();
+  std::vector <double>::const_iterator end = x.begin() + offset;
+  std::vector <double> sub(begin, end);
+
+  return sub;
+}
+
 std::vector <double> DataFile::GetY() const
 {
   return y;
 }
+
+std::vector <double> DataFile::GetY(int offset) const
+{
+  std::vector <double>::const_iterator begin = y.begin();
+  std::vector <double>::const_iterator end = y.begin() + offset;
+  std::vector <double> sub(begin, end);
+
+  return sub;
+}
+
 std::vector <double> DataFile::GetYError() const
 {
   return y_error;
