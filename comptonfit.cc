@@ -68,15 +68,18 @@ int main(int argc, char *argv[])
 
   TCanvas *canvas = new TCanvas("canvas", "Asymmetry in run", 10, 10, 1500, 800);
   canvas->SetGridx(1);
+  canvas->SetGridy(1);
 
   if(compton->fResiduals){
     canvas->Divide(1,2);
     canvas->cd(1);
     canvas->GetPad(1)->SetGridx(1);
+    canvas->GetPad(1)->SetGridy(1);
   }
   else{
     canvas->cd();
     canvas->SetGridx(1);
+    canvas->SetGridy(1);
   }
 
   std::vector<double> zero;
@@ -92,8 +95,8 @@ int main(int argc, char *argv[])
   graph->SetMarkerStyle(kFullCircle);
   graph->SetLineColor(kRed);
   graph->SetMarkerColor(kRed);
-  graph->SetMaximum(0.5);
-  graph->SetMinimum(-0.5);
+  graph->SetMaximum(0.2);
+  graph->SetMinimum(-0.2);
   graph->GetXaxis()->SetLimits(0,150);
 
   graph->Draw("AP");
@@ -187,6 +190,7 @@ int main(int argc, char *argv[])
   if(compton->fResiduals){
     canvas->cd(2);
     canvas->GetPad(2)->SetGridx(2);
+    canvas->GetPad(2)->SetGridy(2);
 
     std::vector <double> residuals;
 
@@ -207,8 +211,8 @@ int main(int argc, char *argv[])
     residual->SetMarkerStyle(kFullCircle);
     residual->SetMarkerColor(kRed);
     residual->SetLineColor(kRed);
-    residual->SetMaximum(0.5);
-    residual->SetMinimum(-0.5);
+    residual->SetMaximum(0.02);
+    residual->SetMinimum(-0.02);
     residual->GetXaxis()->SetLimits(0,150);
     residual->SetFillColor(38);
     residual->Draw("AB");

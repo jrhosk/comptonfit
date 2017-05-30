@@ -148,7 +148,7 @@ double ComptonConfig::RhoToPositionMap(double initCE)
 
   if(debug) {
     std::cout << blue << "Using the following parameters for rhoToX conversion" << std::endl;
-    std::cout << Form("det.ce_to_det_bot: %f = (%f)*(%f + 0.00001)\n", det.ce_to_det_bot, initCE, det.width);
+    std::cout << Form("det.ce_to_det_bot: %f = (%f)*(%f + %f)\n", det.ce_to_det_bot, initCE, det.width, det.spacing);
     std::cout << "Beam energy: " << beam.beam_energy << " +/- " << 0.1 << std::endl;
     std::cout << "Field(s):    " << mag[0].dipole << " " << mag[1].dipole << std::endl;
     std::cout << Form("geo.drift_first: %f ", geo.drift_first) << std::endl;
