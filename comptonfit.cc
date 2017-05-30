@@ -48,7 +48,8 @@ int main(int argc, char *argv[])
   bool polSign = false;
 
   for(int i = 0; i < (int)(asym_data->GetArraySize()); i++) {
-    if( (yield_data->GetY().at(i)-background_data->GetY().at(i) < 100.0*background_data->GetYError().at(i) ) && i > 25) {
+    // if( (yield_data->GetY().at(i)-background_data->GetY().at(i) < 100.0*background_data->GetYError().at(i))) {
+    if( (yield_data->GetY().at(i)-yield_data->GetY().at(i+1) > 0.5*yield_data->GetY().at(i))) {
 
       initCE = asym_data->GetX().at(i-1); 
       std::cout << "Initial estimate of Compton edge (CE) : "<< initCE << std::endl;
@@ -97,16 +98,16 @@ int main(int argc, char *argv[])
 
   graph->Draw("AP");
 
-  TF1 *polFit = new TF1("polFit", compton, &ComptonConfig::TheoreticalAsymFit, 1, initCE, 2);
+  TF1 *polFit = new TF1("polFit", compton, &ComptonConfig::TheoreticalAsymFit, compton->fLowerLimit, compton->fUpperLimit, 2);
 
   if(polSign) {                                                                                                                                       
-    polFit->SetParameters(initCE, 0.9);   
-    polFit->SetParLimits(0, 110.0, 124.0);
-    polFit->SetParLimits(1, 0.80, 1.0);   
+    polFit->SetParameters(initCE, 0.85);   
+    polFit->SetParLimits(0, compton->fLowerCELimit, compton->fUpperCELimit);
+    polFit->SetParLimits(1, compton->fLowerPolLimit, compton->fUpperPolLimit);   
   } else { 
-    polFit->SetParameters(initCE, -1.0);  
-    polFit->SetParLimits(0, 110.0, 124.0);
-    polFit->SetParLimits(1, -1.0, -0.80);
+    polFit->SetParameters(initCE, -0.85);  
+    polFit->SetParLimits(0, compton->fLowerCELimit, compton->fUpperCELimit);
+    polFit->SetParLimits(1, -(compton->fUpperPolLimit), -(compton->fLowerPolLimit));
   }
 
   polFit->SetParNames("comptonEdge","polarization");
@@ -122,9 +123,11 @@ int main(int argc, char *argv[])
   std::cout << green << "the polarization fit status " << int(result) << white << std::endl;
 
   if(int(result) == 0) {
+
     std::cout << blue 
-	      << "pol%: " << (polFit->GetParameter(1))*100 << " +/- " << (polFit->GetParError(1))*100 
-	      << "\t CE: " << polFit->GetParameter(0) << " +/- " << polFit->GetParError(0) 
+	      << "Polariztion(%): "<< 100*(polFit->GetParameter(1)) << " +/- " << 100*(polFit->GetParError(1)) 
+	      << "\tCompton edge: " << polFit->GetParameter(0) << " +/- " << polFit->GetParError(0) 
+	      << "\tChi^2/NDF: " << (polFit->GetChisquare())/(polFit->GetNDF()) 
 	      << white << std::endl;
 
     std::cout << blue << "Fit converged, hence applying MINOS for better errors" << white << std::endl;

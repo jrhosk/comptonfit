@@ -30,9 +30,17 @@
 
 #ifdef compton_config_cxx
 
-ComptonConfig::ComptonConfig():fGraphicsShow(false), fResiduals(false)
+ComptonConfig::ComptonConfig()
 {
-  // Filler
+  fLowerLimit = 1.0;
+  fUpperLimit = 120.0;
+  fGraphicsShow = false;
+  fResiduals = false; 
+  fLowerPolLimit = 0.8;
+  fUpperPolLimit = 1.0;
+  fLowerCELimit = 115.0;
+  fUpperCELimit = 120.0;
+
 }
 
 ComptonConfig::~ComptonConfig()
@@ -51,7 +59,7 @@ double ComptonConfig::CrossSectionFit(double *thisStrip, double *parCx)
 {
   double a_const = ComputeAlpha();
 
-  double xStrip = xCedge - (parCx[1] - (*thisStrip))*det.width*parCx[0];
+  double xStrip = xCedge - (parCx[1] - (*thisStrip))*(det.width+det.spacing)*parCx[0];
   double rhoStrip = (param[0]+ xStrip*param[1]+ xStrip*xStrip*param[2]+ xStrip*xStrip*xStrip*param[3]);
   double rhoPlus = 1.0-rhoStrip*(1.0+a_const);
   double rhoMinus = 1.0-rhoStrip*(1.0 - a_const);
@@ -66,7 +74,7 @@ double ComptonConfig::TheoreticalAsymFit(double *thisStrip, double *par)
   
   double a_const = ComputeAlpha();
   double delta;
-  double xStrip = xCedge - (par[0] -(*thisStrip))*det.width; 
+  double xStrip = xCedge - (par[0] -(*thisStrip))*(det.width+det.spacing); 
   double rhoStrip = param[0]+ xStrip*param[1]+ xStrip*xStrip*param[2]+ xStrip*xStrip*xStrip*param[3];
 
 
@@ -86,12 +94,15 @@ double ComptonConfig::TheoreticalAsymFit(double *thisStrip, double *par)
   else {
     delta = 0.0;
   }
+
   double radCor = (1.0+delta);
 
   double rhoPlus = 1.0-rhoStrip*(1.0+a_const);
   double rhoMinus = 1.0-rhoStrip*(1.0 - a_const); 
   double dsdrho1 = rhoPlus/rhoMinus;
   double dsdrho =((rhoStrip*(1.0 - a_const)*rhoStrip*(1.0 - a_const)/rhoMinus)+1.0+dsdrho1*dsdrho1); 
+
+  // radCor = 1;
 
   return (radCor*(par[1]*(rhoPlus*(1.0-1.0/(rhoMinus*rhoMinus)))/dsdrho));
 
@@ -161,6 +172,9 @@ double ComptonConfig::RhoToPositionMap(double initCE)
   double R_bend_2    = beam.beam_energy/(pchep::c_light_lol*mag[1].dipole);
 
   QEDasym.open("data/QEDasymP.txt");
+  ofstream test;
+  test.open("test.dat");
+
   if(!QEDasym.is_open()){
     std::cout << red << "Cant open file: QEDasymP.txt" << white << std::endl;
     exit(1);
@@ -188,6 +202,7 @@ double ComptonConfig::RhoToPositionMap(double initCE)
     dsdx_0[i] = ((1.0-rho[i]*(1.0+a_const))/(1.0-rho[i]*(1.0-a_const)));
     dsdx[i]   = 2*boost::math::constants::pi<double>()*pow(pchep::classic_e_radius, 2)/100.0*a_const*(rho[i]*rho[i]*(1-a_const)*(1-a_const)/(1-rho[i]*(1.0-a_const))+1.0+(dsdx_0[i] *dsdx_0[i]));
     asym[i]   = 2*boost::math::constants::pi<double>()*pow(pchep::classic_e_radius, 2)/100.0*a_const/dsdx[i]*(1-rho[i]*(1+a_const))*(1.0-1.0/(pow((1.0-rho[i]*(1.0-a_const)),2))) ;
+    test << rho[i] << " " << asym[i] << std::endl; 
 
     if(QEDasym.is_open()) {
       QEDasym << xPrime[i] << "\t" << rho[i] << "\t" << asym[i] << "\t" << dsdx[i] << std::endl;
@@ -195,6 +210,7 @@ double ComptonConfig::RhoToPositionMap(double initCE)
   }
 
   QEDasym.close();
+  test.close();
   xCedge = xPrime[nPoints-1]; // 'xCedge' is used in determining QED asym, hence this should be evaluated before calling the function to fit theoretical asym                                      
 
   if(debug) {
@@ -233,8 +249,8 @@ void ComptonConfig::GetOptions(char **options){
    flag = options[i];
 
    if(flag.compare("--config") == 0){
-     std::string option(options[i+1]);
-     fConfigDirectory = option;
+     std::string opt(options[i+1]);
+     fConfigDirectory = opt;
      flag.clear();
      std::cout << blue << "Loading exteranl configuration files from:\t" 
 	       << fConfigDirectory 
@@ -248,11 +264,39 @@ void ComptonConfig::GetOptions(char **options){
       flag.clear();
       fResiduals = true;
     }
+    if(flag.compare("--fit_range") == 0){
+      flag.clear();
+      std::string opt(options[i+1]);
+      int index = opt.find_first_of(":");
+      fLowerLimit = atoi(opt.substr(0, index).c_str());
+      fUpperLimit = atoi(opt.substr(index + 1, opt.length()-index).c_str());
+    }
+    if(flag.compare("--pol_range") == 0){
+      flag.clear();
+      std::string opt(options[i+1]);
+      int index = opt.find_first_of(":");
+      fLowerPolLimit = atof(opt.substr(0, index).c_str());
+      fUpperPolLimit = atof(opt.substr(index + 1, opt.length()-index).c_str());
+    }
+    if(flag.compare("--compton_range") == 0){
+      flag.clear();
+      std::string opt(options[i+1]);
+      int index = opt.find_first_of(":");
+      fLowerCELimit = atof(opt.substr(0, index).c_str());
+      fUpperCELimit = atof(opt.substr(index + 1, opt.length()-index).c_str());
+    }
+
    if(flag.compare("--help") == 0){
      printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
      printf("Usage: ./comptonfit <options>\n");
      printf("         --graphics \tGraphical output.\n");
      printf("         --residuals \tCalculate and plot residuals of asymmetry fit.\n");
+     printf("         --fit_range \tDefine the range of strips over which the fit will be done.\n");
+     printf("                     \tex. --fit_range 1:120 \n");
+     printf("         --pol_range \tDefine the range of polarization over which the fit will be done.\n");
+     printf("                     \tex. --pol_range 0.8:1.0 \n");
+     printf("         --compton_range \tDefine the range of compton edge over which the fit will be done.\n");
+     printf("                     \tex. --compton_range 115:120 \n");
      printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
      exit(0);
    }

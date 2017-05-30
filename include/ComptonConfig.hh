@@ -57,6 +57,13 @@ public:
 
   };
 
+  double fLowerLimit;
+  double fUpperLimit;
+  double fLowerPolLimit;
+  double fUpperPolLimit;
+  double fLowerCELimit;
+  double fUpperCELimit;
+
   double xCedge;
   double kprimemax;
   double param[4];
