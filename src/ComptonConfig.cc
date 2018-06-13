@@ -8,6 +8,8 @@
 #include <fstream>
 #include <cmath>
 
+using namespace std;
+
 // Root libraries
 
 #include "TAxis.h"
